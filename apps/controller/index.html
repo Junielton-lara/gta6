@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="utf-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover"
+    />
+    <meta name="theme-color" content="#07040d" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <title>Vice City Online — Controle</title>
+  </head>
+  <body>
+    <main id="app">
+      <section class="screen join" id="screen-join">
+        <div class="join-card">
+          <div class="logo">VICE CITY <span>ONLINE</span></div>
+          <p class="subtitle">Digite o código e o PIN que aparecem na TV</p>
+          <form id="join-form" autocomplete="off">
+            <label>
+              <span>Código</span>
+              <input id="input-code" inputmode="text" autocapitalize="characters" maxlength="4" placeholder="ABCD" required />
+            </label>
+            <label>
+              <span>PIN</span>
+              <input id="input-pin" inputmode="numeric" pattern="[0-9]*" maxlength="4" placeholder="0000" required />
+            </label>
+            <button type="submit" id="btn-join">Conectar</button>
+          </form>
+          <p class="error" id="join-error" role="alert"></p>
+          <p class="server-state" id="join-server"><i></i><span>Conectando ao servidor…</span></p>
+        </div>
+      </section>
+
+      <section class="screen pad" id="screen-pad" hidden>
+        <header class="statusbar">
+          <div class="status" id="status"><i></i><span>Conectado</span></div>
+          <div class="session" id="session"></div>
+          <div class="latency" id="latency">— ms</div>
+          <button type="button" class="icon-btn" id="btn-fullscreen" aria-label="Tela cheia">⛶</button>
+        </header>
+
+        <div class="zone zone-stick" id="zone-stick">
+          <div class="stick-base" id="stick-base"><div class="stick-knob" id="stick-knob"></div></div>
+          <p class="zone-hint">Direção</p>
+        </div>
+
+        <div class="zone zone-buttons">
+          <div class="pedals">
+            <button type="button" class="pedal brake" data-button="Brake" aria-label="Freio">
+              <span>L</span><small>Freio</small>
+            </button>
+            <button type="button" class="pedal accel" data-button="Accel" aria-label="Acelerador">
+              <span>R</span><small>Acelera</small>
+            </button>
+          </div>
+          <button type="button" class="action" id="btn-action" data-button="Action" aria-label="Ação">A</button>
+        </div>
+
+        <div class="banner" id="banner" hidden></div>
+      </section>
+
+      <div class="rotate" id="rotate">
+        <div class="phone-icon"></div>
+        <p>Gire o celular para a horizontal</p>
+      </div>
+    </main>
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>

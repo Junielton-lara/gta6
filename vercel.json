@@ -1,0 +1,46 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "buildCommand": "npm run build:vercel",
+  "outputDirectory": "dist-web",
+  "installCommand": "npm ci",
+  "rewrites": [
+    {
+      "source": "/health",
+      "destination": "http://187.127.23.89:3020/health"
+    },
+    {
+      "source": "/socket.io",
+      "destination": "http://187.127.23.89:3020/socket.io"
+    },
+    {
+      "source": "/socket.io/:path*",
+      "destination": "http://187.127.23.89:3020/socket.io/:path*"
+    },
+    { "source": "/tv", "destination": "/tv/index.html" },
+    { "source": "/tv/", "destination": "/tv/index.html" },
+    { "source": "/controller", "destination": "/controller/index.html" },
+    { "source": "/controller/", "destination": "/controller/index.html" }
+  ],
+  "headers": [
+    {
+      "source": "/(.*)",
+      "headers": [
+        { "key": "X-Content-Type-Options", "value": "nosniff" },
+        { "key": "X-Frame-Options", "value": "DENY" },
+        { "key": "Referrer-Policy", "value": "strict-origin-when-cross-origin" }
+      ]
+    },
+    {
+      "source": "/tv/assets/(.*)",
+      "headers": [
+        { "key": "Cache-Control", "value": "public, max-age=31536000, immutable" }
+      ]
+    },
+    {
+      "source": "/controller/assets/(.*)",
+      "headers": [
+        { "key": "Cache-Control", "value": "public, max-age=31536000, immutable" }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,21 @@
+{
+  "name": "@vco/server",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "tsx src/index.ts",
+    "dev:watch": "tsx watch --clear-screen=false --include ../../packages/shared/src src/index.ts",
+    "start": "tsx src/index.ts --production"
+  },
+  "dependencies": {
+    "@vco/shared": "*",
+    "express": "^5.3.0",
+    "qrcode": "^1.5.4",
+    "socket.io": "^4.8.4",
+    "tsx": "^4.23.15"
+  },
+  "devDependencies": {
+    "socket.io-client": "^4.8.4"
+  }
+}

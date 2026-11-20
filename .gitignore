@@ -1,0 +1,10 @@
+node_modules/
+dist/
+dist-web/
+.env
+*.log
+logs/
+.vite/
+coverage/
+.screens/
+.playwright-mcp/

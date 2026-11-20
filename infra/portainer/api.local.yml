@@ -1,0 +1,26 @@
+# Build local da API no Portainer (sem GHCR).
+# Compose path: infra/portainer/api.local.yml
+# Context do build = raiz do repositório.
+
+services:
+  api:
+    build:
+      context: ../..
+      dockerfile: apps/server/Dockerfile
+    image: vco-api:local
+    pull_policy: build
+    container_name: vco-api
+    restart: unless-stopped
+    ports:
+      - '3020:3000'
+    environment:
+      NODE_ENV: production
+      PORT: 3000
+      HOST: 0.0.0.0
+      API_ONLY: 'true'
+      ALLOW_NON_LAN: 'true'
+      TRUST_PROXY: 'true'
+      SESSION_TTL_MINUTES: ${SESSION_TTL_MINUTES:-30}
+      APP_URL: ${APP_URL}
+      API_URL: ${API_URL:-http://187.127.23.89:3020}
+      CORS_ORIGINS: ${CORS_ORIGINS:-}
