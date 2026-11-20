@@ -8,7 +8,7 @@ O render roda no aparelho (Three.js). Servidor só sincroniza sessão e input.
 | Camada | Onde |
 |--------|------|
 | Frontend (`/tv`, `/controller`) | **Vercel** |
-| API Socket.IO | **VPS Hostinger / Portainer** `:3030` |
+| API Socket.IO | **VPS Hostinger / Portainer** `:47193` |
 
 Detalhes: **[docs/DEPLOY.md](docs/DEPLOY.md)**.
 

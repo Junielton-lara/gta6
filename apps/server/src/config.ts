@@ -13,7 +13,7 @@ export interface ServerConfig {
    * Ex.: https://vice-city-online.vercel.app
    */
   appUrl: string;
-  /** URL pública da API na VPS (documentação / health). Ex.: http://187.127.23.89:3030 */
+  /** URL pública da API na VPS (documentação / health). Ex.: http://187.127.23.89:47193 */
   apiUrl: string;
   /** Host fixo legado para QR; vazio = derivado da requisição / LAN. */
   publicHost: string;

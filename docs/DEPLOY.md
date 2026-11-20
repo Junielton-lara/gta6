@@ -3,7 +3,7 @@
 Arquitetura igual à do Staltek / Gerenciador de OS:
 
 - **Frontend** (TV + controle + landing) → **Vercel**
-- **Backend** (Express + Socket.IO) → **Portainer na VPS** `187.127.23.89:3030`
+- **Backend** (Express + Socket.IO) → **Portainer na VPS** `187.127.23.89:47193`
 
 O 3D roda no navegador da TV. A VPS só sincroniza sessão e input.
 
@@ -18,7 +18,7 @@ TV / celular
  Vercel (dist-web)
     │  rewrite /socket.io  +  /health
     ▼
- VPS Hostinger :3030  →  container vco-api (Portainer)
+ VPS Hostinger :47193  →  container vco-api (Portainer)
 ```
 
 Na Vercel, `VITE_SOCKET_URL` fica **vazio** (same-origin). O `vercel.json`
@@ -33,7 +33,7 @@ Staltek com as rotas `/auth`, `/clients`, etc.
 | Porta | Serviço |
 |-------|---------|
 | 3010 | API Staltek (já existente) |
-| **3030** | **API Vice City Online** |
+| **47193** | **API Vice City Online** |
 | 9443 | Portainer UI |
 
 ## 1. API no Portainer
@@ -45,13 +45,13 @@ Staltek com as rotas `/auth`, `/clients`, etc.
 4. Confirme:
 
 ```bash
-curl -s http://187.127.23.89:3030/health
+curl -s http://187.127.23.89:47193/health
 ```
 
 | Variável | Valor |
 |----------|-------|
 | `APP_URL` | URL da Vercel, ex. `https://vice-city-online.vercel.app` |
-| `API_URL` | `http://187.127.23.89:3030` |
+| `API_URL` | `http://187.127.23.89:47193` |
 | `API_ONLY` | `true` (já no compose) |
 | `ALLOW_NON_LAN` | `true` |
 | `TRUST_PROXY` | `true` |
@@ -64,7 +64,7 @@ O QR code usa `APP_URL` (página do controle na Vercel), não o IP da API.
 2. A Vercel usa `vercel.json` (`buildCommand` → `npm run build:vercel`,
    `outputDirectory` → `dist-web`).
 3. **Não** defina `VITE_SOCKET_URL` (deixe vazio / omita).
-4. Ajuste o IP/porta em `vercel.json` se a API mudar de `187.127.23.89:3030`.
+4. Ajuste o IP/porta em `vercel.json` se a API mudar de `187.127.23.89:47193`.
 5. Depois do primeiro deploy, copie a URL HTTPS para `APP_URL` na stack
    Portainer e faça redeploy/recreate do container.
 
@@ -117,9 +117,9 @@ git push  →  Vercel rebuild automático
 
 ## 6. Checklist
 
-- [ ] Container `vco-api` healthy em `:3030`
+- [ ] Container `vco-api` healthy em `:47193`
 - [ ] `APP_URL` = origem real da Vercel
-- [ ] `vercel.json` aponta para `187.127.23.89:3030`
+- [ ] `vercel.json` aponta para `187.127.23.89:47193`
 - [ ] `/tv/` abre, QR mostra link `https://…vercel.app/controller/?code=&pin=`
 - [ ] Celular conecta; pedais e stick movem o carro
 - [ ] `/health` via Vercel e via IP da VPS respondem `ok`
