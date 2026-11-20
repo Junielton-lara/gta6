@@ -8,7 +8,7 @@ import {
   type SessionStatus,
   type TvSessionInfo,
 } from '@vco/shared';
-import { socketUrl } from './socketUrl';
+import { socketClientOptions, socketUrl } from './socketUrl';
 
 export type ServerState = 'connecting' | 'connected' | 'reconnecting' | 'error';
 
@@ -25,12 +25,9 @@ const STORAGE_KEY = 'vco:tv-session';
 /** Conexão da TV: cria/retoma a sessão a cada (re)conexão do Socket.IO. */
 export function connectTv(handlers: TvConnectionHandlers): Socket<ServerToClientEvents, ClientToServerEvents> {
   const socket: Socket<ServerToClientEvents, ClientToServerEvents> = io(socketUrl(), {
-    path: '/socket.io',
-    transports: ['websocket', 'polling'],
-    reconnection: true,
+    ...socketClientOptions(),
     reconnectionDelay: 500,
     reconnectionDelayMax: 3000,
-    timeout: 8000,
   });
 
   handlers.onServerState('connecting');

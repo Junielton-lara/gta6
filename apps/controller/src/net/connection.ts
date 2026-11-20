@@ -7,7 +7,7 @@ import {
   type ServerToClientEvents,
   type SessionStatus,
 } from '@vco/shared';
-import { socketUrl } from './socketUrl';
+import { socketClientOptions, socketUrl } from './socketUrl';
 
 export type LinkState =
   | { kind: 'server-connecting' }
@@ -40,12 +40,9 @@ export class ControllerLink {
     onStatus: (status: SessionStatus) => void,
   ) {
     this.socket = io(socketUrl(), {
-      path: '/socket.io',
-      transports: ['websocket', 'polling'],
-      reconnection: true,
+      ...socketClientOptions(),
       reconnectionDelay: 400,
       reconnectionDelayMax: 2000,
-      timeout: 8000,
     });
 
     onState({ kind: 'server-connecting' });

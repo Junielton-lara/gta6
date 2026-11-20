@@ -9,8 +9,12 @@
       "destination": "http://187.127.23.89:47193/health"
     },
     {
+      "source": "/socket.io/",
+      "destination": "http://187.127.23.89:47193/socket.io/"
+    },
+    {
       "source": "/socket.io",
-      "destination": "http://187.127.23.89:47193/socket.io"
+      "destination": "http://187.127.23.89:47193/socket.io/"
     },
     {
       "source": "/socket.io/:path*",
