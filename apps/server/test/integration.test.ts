@@ -171,7 +171,7 @@ describe('URL pública (Vercel + VPS)', () => {
         port: 0,
         host: '127.0.0.1',
         appUrl: 'https://vice-city-online.vercel.app',
-        apiUrl: 'http://187.127.23.89:3020',
+        apiUrl: 'http://187.127.23.89:3030',
         trustProxy: true,
         allowNonLan: true,
         apiOnly: true,

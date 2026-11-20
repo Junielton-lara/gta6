@@ -12,7 +12,7 @@ services:
     container_name: vco-api
     restart: unless-stopped
     ports:
-      - '3020:3000'
+      - '3030:3000'
     environment:
       NODE_ENV: production
       PORT: 3000
@@ -22,5 +22,5 @@ services:
       TRUST_PROXY: 'true'
       SESSION_TTL_MINUTES: ${SESSION_TTL_MINUTES:-30}
       APP_URL: ${APP_URL}
-      API_URL: ${API_URL:-http://187.127.23.89:3020}
+      API_URL: ${API_URL:-http://187.127.23.89:3030}
       CORS_ORIGINS: ${CORS_ORIGINS:-}

@@ -6,15 +6,15 @@
   "rewrites": [
     {
       "source": "/health",
-      "destination": "http://187.127.23.89:3020/health"
+      "destination": "http://187.127.23.89:3030/health"
     },
     {
       "source": "/socket.io",
-      "destination": "http://187.127.23.89:3020/socket.io"
+      "destination": "http://187.127.23.89:3030/socket.io"
     },
     {
       "source": "/socket.io/:path*",
-      "destination": "http://187.127.23.89:3020/socket.io/:path*"
+      "destination": "http://187.127.23.89:3030/socket.io/:path*"
     },
     { "source": "/tv", "destination": "/tv/index.html" },
     { "source": "/tv/", "destination": "/tv/index.html" },

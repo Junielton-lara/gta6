@@ -4,7 +4,7 @@
 # No Portainer: Stacks → Add stack → Web editor
 # Cole este arquivo e preencha as variáveis (modelo: stack.env.example).
 #
-# Porta 3020 no host (3010 fica com a API Staltek).
+# Porta 3030 no host (3010 = Staltek; 3020 pode estar ocupada por outro serviço).
 # Frontend: Vercel (vercel.json faz proxy de /health e /socket.io).
 
 services:
@@ -13,7 +13,7 @@ services:
     container_name: vco-api
     restart: unless-stopped
     ports:
-      - '3020:3000'
+      - '3030:3000'
     environment:
       NODE_ENV: production
       PORT: 3000
@@ -25,7 +25,7 @@ services:
       # Origem do frontend na Vercel (QR code + CORS)
       APP_URL: ${APP_URL}
       # URL pública da API neste host
-      API_URL: ${API_URL:-http://187.127.23.89:3020}
+      API_URL: ${API_URL:-http://187.127.23.89:3030}
       CORS_ORIGINS: ${CORS_ORIGINS:-}
     healthcheck:
       test:
