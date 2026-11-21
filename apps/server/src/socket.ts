@@ -4,7 +4,9 @@ import {
   PROTOCOL_VERSION,
   ROUTES,
   isValidEvent,
+  isValidHints,
   isValidInput,
+  isValidRumble,
   normalizeCode,
   normalizePin,
   type ClientToServerEvents,
@@ -98,6 +100,8 @@ export function registerSocketHandlers(io: IO, sessions: SessionManager, config:
         y: input.y,
         buttons: input.buttons,
         seq: input.seq,
+        ...(input.cx !== undefined ? { cx: input.cx } : {}),
+        ...(input.cy !== undefined ? { cy: input.cy } : {}),
       });
     });
 
@@ -105,6 +109,25 @@ export function registerSocketHandlers(io: IO, sessions: SessionManager, config:
       const session = controllerSession(socket.id);
       if (!session || !isValidEvent(event)) return;
       io.to(tvRoom(session.code)).emit('controller:event', event);
+    });
+
+    socket.on('tv:control-mode', (mode) => {
+      const binding = sessions.bindingOf(socket.id);
+      if (binding?.role !== 'tv') return;
+      if (mode !== 'on_foot' && mode !== 'driving') return;
+      io.to(controllerRoom(binding.code)).emit('control:mode', mode);
+    });
+
+    socket.on('tv:control-hints', (hints) => {
+      const binding = sessions.bindingOf(socket.id);
+      if (binding?.role !== 'tv' || !isValidHints(hints)) return;
+      io.to(controllerRoom(binding.code)).emit('control:hints', hints);
+    });
+
+    socket.on('tv:rumble', (ms) => {
+      const binding = sessions.bindingOf(socket.id);
+      if (binding?.role !== 'tv' || !isValidRumble(ms)) return;
+      io.to(controllerRoom(binding.code)).volatile.emit('control:rumble', Math.round(ms));
     });
 
     socket.on('ping', (ack) => {

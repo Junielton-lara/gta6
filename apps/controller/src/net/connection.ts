@@ -2,6 +2,8 @@ import { io, type Socket } from 'socket.io-client';
 import {
   PROTOCOL_VERSION,
   type ClientToServerEvents,
+  type ControlHints,
+  type ControlMode,
   type ControllerEvent,
   type ControllerInput,
   type ServerToClientEvents,
@@ -38,6 +40,9 @@ export class ControllerLink {
   constructor(
     private readonly onState: (state: LinkState) => void,
     onStatus: (status: SessionStatus) => void,
+    onMode: (mode: ControlMode) => void = () => {},
+    onHints: (hints: ControlHints) => void = () => {},
+    onRumble: (ms: number) => void = () => {},
   ) {
     this.socket = io(socketUrl(), {
       ...socketClientOptions(),
@@ -58,6 +63,9 @@ export class ControllerLink {
     });
     this.socket.on('connect_error', () => onState({ kind: 'reconnecting', reason: 'servidor inacessível' }));
     this.socket.on('session:status', (status) => onStatus(status));
+    this.socket.on('control:mode', onMode);
+    this.socket.on('control:hints', onHints);
+    this.socket.on('control:rumble', onRumble);
     this.socket.on('controller:replaced', () => {
       this.joined = false;
       onState({ kind: 'replaced' });
@@ -121,8 +129,14 @@ export class ControllerLink {
     this.socket.disconnect().connect();
   }
 
-  sendInput(input: ControllerInput): void {
-    if (this.joined) this.socket.volatile.emit('controller:input', input);
+  /**
+   * Analógico contínuo pode ser descartado (o próximo pacote corrige). Mudança de botão
+   * não: um toque curto perdido é um pulo/buzina que não acontece.
+   */
+  sendInput(input: ControllerInput, reliable = false): void {
+    if (!this.joined) return;
+    if (reliable) this.socket.emit('controller:input', input);
+    else this.socket.volatile.emit('controller:input', input);
   }
 
   sendEvent(event: ControllerEvent): void {

@@ -1,0 +1,33 @@
+CURITIBA OPEN WORLD — CRÉDITOS E LICENÇAS DE DADOS E RECURSOS
+
+MAPA (ruas, quadras, contornos e alturas de prédios, praças, semáforos, pontos de ônibus, árvores, marcos)
+  © OpenStreetMap contributors — Open Database License (ODbL) 1.0
+  https://www.openstreetmap.org/copyright
+  Recorte: Praça Tiradentes / Rua XV de Novembro / Paço da Liberdade, Curitiba-PR
+  bbox -25.4325,-49.2760,-25.4280,-49.2690 · obtido via Overpass API
+  Arquivo derivado: world/tiradentes.json (gerado por tools/osm-import/bake.mjs)
+
+ESTABELECIMENTOS E OBRAS (lojas, restaurantes, bancos, farmácias, hotéis, cultura, arte pública)
+  © OpenStreetMap contributors — ODbL 1.0 · base OSM de 2026-06-01 (via Overpass)
+  Nomes, tipos, horários, cozinha e autoria vêm das tags do OSM e podem estar desatualizados.
+  Marcas e nomes comerciais pertencem aos seus titulares; aparecem só como dado do mapa.
+
+  O que NÃO vem do OSM (é representação, não dado real):
+  - Altura dos prédios sem height/building:levels no OSM (marcados "est" no JSON).
+  - Fachadas, cores e vitrines genéricas.
+  - Torres da Catedral e cornijas do Paço da Liberdade (modelos representativos).
+  - Postes de iluminação e árvores dentro de praças (distribuição ilustrativa).
+  - Petit-pavé: padrão representativo, não o desenho real da Rua XV.
+  - Portas dos estabelecimentos sem entrada mapeada no OSM: posição estimada
+    (lado do prédio voltado para a rua mais próxima; marcadas "doorEst" no JSON).
+  - Interiores: salas representativas por tipo de negócio. O OSM não descreve interiores.
+
+TEXTURAS
+  Poly Haven — CC0 1.0 (domínio público) — https://polyhaven.com/license
+  asphalt_02, concrete_pavement, plastered_wall_02, leafy_grass,
+  concrete_tile_facade, brick_pavement_02 (reduzidas para 512 px)
+
+MODELOS 3D
+  Personagens, veículos e animais atuais: procedurais, criados no próprio projeto.
+  Modelos opcionais em assets/characters/ (ex.: Mixamo) seguem a licença do fornecedor
+  e não fazem parte do repositório.

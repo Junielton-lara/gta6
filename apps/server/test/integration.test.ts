@@ -158,6 +158,28 @@ describe('TV ↔ controle via Socket.IO', () => {
     await fromSecond;
     expect(leaked).toBe(false);
   });
+
+  it('TV envia dicas de botões e vibração; celular não consegue forjar', async () => {
+    const tv3 = await client();
+    const s = await tvHello(tv3);
+    const phone = await client();
+    await phone.emitWithAck('controller:join', { protocol: PROTOCOL_VERSION, code: s.code, pin: s.pin });
+
+    const hints = once<Record<string, string>>(phone, 'control:hints');
+    tv3.emit('tv:control-hints', { Cross: 'Pular', Triangle: 'Entrar' });
+    expect(await hints).toEqual({ Cross: 'Pular', Triangle: 'Entrar' });
+
+    const rumble = once<number>(phone, 'control:rumble');
+    tv3.emit('tv:rumble', 120);
+    expect(await rumble).toBe(120);
+
+    let forged = false;
+    phone.on('control:hints', () => (forged = true));
+    phone.emit('tv:control-hints', { Cross: 'falso' });
+    tv3.emit('tv:control-hints', { Cross: 'x'.repeat(50) });
+    await new Promise((r) => setTimeout(r, 150));
+    expect(forged).toBe(false);
+  });
 });
 
 describe('URL pública (Vercel + VPS)', () => {

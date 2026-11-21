@@ -6,7 +6,7 @@ export function landingPage(): string {
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Vice City Online</title>
+<title>Curitiba Open World</title>
 <style>
   body { margin: 0; min-height: 100vh; display: grid; place-items: center; gap: 24px;
     font-family: system-ui, sans-serif; background: #0b0614; color: #f4ecff; }
@@ -23,7 +23,7 @@ export function landingPage(): string {
 </head>
 <body>
 <main>
-  <h1>Vice City Online</h1>
+  <h1>Curitiba Open World</h1>
   <p>Escolha o aparelho</p>
   <nav>
     <a href="${ROUTES.tv}" autofocus>📺 Abrir na TV</a>

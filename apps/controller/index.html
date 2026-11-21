@@ -10,13 +10,13 @@
     <meta name="mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-    <title>Vice City Online — Controle</title>
+    <title>Curitiba Open World — Controle</title>
   </head>
   <body>
     <main id="app">
       <section class="screen join" id="screen-join">
         <div class="join-card">
-          <div class="logo">VICE CITY <span>ONLINE</span></div>
+          <div class="logo">CURITIBA <span>OPEN WORLD</span></div>
           <p class="subtitle">Digite o código e o PIN que aparecem na TV</p>
           <form id="join-form" autocomplete="off">
             <label>
@@ -34,33 +34,110 @@
         </div>
       </section>
 
-      <section class="screen pad" id="screen-pad" hidden>
-        <header class="statusbar">
-          <div class="status" id="status"><i></i><span>Conectado</span></div>
-          <div class="session" id="session"></div>
-          <div class="latency" id="latency">— ms</div>
-          <button type="button" class="icon-btn" id="btn-fullscreen" aria-label="Tela cheia">⛶</button>
-        </header>
+      <header class="statusbar" id="statusbar" hidden>
+        <div class="status" id="status"><i></i><span>Conectado</span></div>
+        <div class="session" id="session"></div>
+        <div class="mode-chip" id="mode-chip">A pé</div>
+        <div class="latency" id="latency">— ms</div>
+        <button type="button" class="icon-btn" id="btn-settings" aria-label="Ajustes do controle">⚙</button>
+        <button type="button" class="icon-btn" id="btn-fullscreen" aria-label="Tela cheia">⛶</button>
+      </header>
 
-        <div class="zone zone-stick" id="zone-stick">
-          <div class="stick-base" id="stick-base"><div class="stick-knob" id="stick-knob"></div></div>
-          <p class="zone-hint">Direção</p>
+      <!-- Layout moderno: dois analógicos, botões de face, gatilhos e touchpad. -->
+      <section class="screen ds" id="screen-ds" hidden>
+        <div class="ds-stick-zone left" id="ds-zone-left">
+          <div class="stick-base" id="ds-base-left"><div class="stick-knob" id="ds-knob-left"></div></div>
+          <p class="zone-hint" id="ds-hint-left">Mover</p>
+        </div>
+        <div class="ds-stick-zone right" id="ds-zone-right">
+          <div class="stick-base cam" id="ds-base-right"><div class="stick-knob cam" id="ds-knob-right"></div></div>
+          <p class="zone-hint" id="ds-hint-right">Câmera</p>
         </div>
 
-        <div class="zone zone-buttons">
-          <div class="pedals">
+        <div class="ds-shoulder left">
+          <button type="button" class="ds-btn trigger" data-button="L2"><b>L2</b><small></small></button>
+          <button type="button" class="ds-btn bumper" data-button="L1"><b>L1</b><small></small></button>
+        </div>
+        <div class="ds-shoulder right">
+          <button type="button" class="ds-btn bumper" data-button="R1"><b>R1</b><small></small></button>
+          <button type="button" class="ds-btn trigger" data-button="R2"><b>R2</b><small></small></button>
+        </div>
+
+        <div class="ds-center">
+          <button type="button" class="ds-btn touchpad" data-button="TouchPad"><b>Touchpad</b><small></small></button>
+          <button type="button" class="ds-btn options" data-button="Options"><b>≡</b><small></small></button>
+        </div>
+
+        <div class="ds-face">
+          <button type="button" class="ds-btn face triangle" data-button="Triangle" data-slide="true" aria-label="Triângulo"><b>△</b><small></small></button>
+          <button type="button" class="ds-btn face square" data-button="Square" data-slide="true" aria-label="Quadrado"><b>□</b><small></small></button>
+          <button type="button" class="ds-btn face circle" data-button="Circle" data-slide="true" aria-label="Círculo"><b>○</b><small></small></button>
+          <button type="button" class="ds-btn face cross" data-button="Cross" data-slide="true" aria-label="Xis"><b>✕</b><small></small></button>
+        </div>
+      </section>
+
+      <section class="screen pad" id="screen-pad" hidden>
+        <div class="zone zone-stick" id="zone-stick">
+          <div class="stick-base" id="stick-base"><div class="stick-knob" id="stick-knob"></div></div>
+          <p class="zone-hint" id="stick-hint">Mover</p>
+        </div>
+
+        <div class="zone zone-buttons" id="zone-look">
+          <div class="look-dot" id="look-dot"></div>
+          <p class="zone-hint look-hint">Arraste no fundo para girar a câmera</p>
+          <div class="pedals" id="panel-drive">
             <button type="button" class="pedal brake" data-button="Brake" aria-label="Freio">
               <span>L</span><small>Freio</small>
             </button>
             <button type="button" class="pedal accel" data-button="Accel" aria-label="Acelerador">
               <span>R</span><small>Acelera</small>
             </button>
+            <button type="button" class="pill-btn interact" data-button="Interact" aria-label="Sair">Sair</button>
+          </div>
+          <div class="foot-actions" id="panel-foot" hidden>
+            <button type="button" class="pill-btn" data-button="Run" aria-label="Correr">Correr</button>
+            <button type="button" class="pill-btn interact" data-button="Interact" aria-label="Interagir">Entrar</button>
           </div>
           <button type="button" class="action" id="btn-action" data-button="Action" aria-label="Ação">A</button>
         </div>
-
-        <div class="banner" id="banner" hidden></div>
       </section>
+
+      <div class="banner" id="banner" hidden></div>
+
+      <div class="sheet" id="settings" hidden>
+        <div class="sheet-card" role="dialog" aria-label="Ajustes do controle">
+          <header>
+            <strong>Ajustes do controle</strong>
+            <button type="button" class="icon-btn" id="settings-close" aria-label="Fechar">✕</button>
+          </header>
+          <div class="sheet-body">
+            <fieldset class="seg">
+              <legend>Layout</legend>
+              <label><input type="radio" name="layout" value="modern" /> <span>Moderno (2 analógicos)</span></label>
+              <label><input type="radio" name="layout" value="classic" /> <span>Clássico</span></label>
+            </fieldset>
+            <label class="range">
+              <span>Zona morta — analógico esquerdo <output id="out-dzl"></output></span>
+              <input type="range" id="set-dzl" min="0" max="0.35" step="0.01" />
+            </label>
+            <label class="range">
+              <span>Sensibilidade — analógico esquerdo <output id="out-snl"></output></span>
+              <input type="range" id="set-snl" min="0.5" max="2" step="0.05" />
+            </label>
+            <label class="range">
+              <span>Zona morta — câmera <output id="out-dzr"></output></span>
+              <input type="range" id="set-dzr" min="0" max="0.35" step="0.01" />
+            </label>
+            <label class="range">
+              <span>Sensibilidade — câmera <output id="out-snr"></output></span>
+              <input type="range" id="set-snr" min="0.5" max="2" step="0.05" />
+            </label>
+            <label class="check"><input type="checkbox" id="set-invy" /> <span>Inverter eixo vertical da câmera</span></label>
+            <label class="check"><input type="checkbox" id="set-vib" /> <span>Vibração</span></label>
+            <button type="button" class="ghost-btn" id="settings-reset">Restaurar padrões</button>
+          </div>
+        </div>
+      </div>
 
       <div class="rotate" id="rotate">
         <div class="phone-icon"></div>

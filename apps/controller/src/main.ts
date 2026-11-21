@@ -4,16 +4,24 @@ import {
   INPUT_SEND_RATE_HZ,
   normalizeCode,
   normalizePin,
+  type ControlHints,
+  type ControlMode,
   type SessionStatus,
 } from '@vco/shared';
 import { Buttons } from './input/Buttons';
+import { vibrate } from './input/haptics';
 import { Joystick } from './input/Joystick';
+import { LookPad } from './input/LookPad';
 import { ControllerLink, type LinkState } from './net/connection';
+import { resetSettings, saveSettings, settings, type Layout } from './settings';
+import { keepScreenOn } from './wakeLock';
 
 const $ = <T extends HTMLElement = HTMLElement>(id: string) => document.getElementById(id) as T;
 
 const screenJoin = $('screen-join');
 const screenPad = $('screen-pad');
+const screenDs = $('screen-ds');
+const statusbar = $('statusbar');
 const form = $<HTMLFormElement>('join-form');
 const inputCode = $<HTMLInputElement>('input-code');
 const inputPin = $<HTMLInputElement>('input-pin');
@@ -23,26 +31,58 @@ const status = $('status');
 const session = $('session');
 const latency = $('latency');
 const banner = $('banner');
+const modeChip = $('mode-chip');
+const panelDrive = $('panel-drive');
+const panelFoot = $('panel-foot');
+const stickHint = $('stick-hint');
+const btnAction = $('btn-action');
+const dsHintLeft = $('ds-hint-left');
+const dsHintRight = $('ds-hint-right');
+const settingsSheet = $('settings');
 
 let tvConnected = false;
 let currentCode = '';
+let stickBase = 'Mover';
+let lastHints: ControlHints = {};
 
-const link = new ControllerLink(onLinkState, onSessionStatus);
+const link = new ControllerLink(onLinkState, onSessionStatus, onControlMode, applyHints, (ms) => vibrate(ms));
+applyControlMode('on_foot');
 
-const joystick = new Joystick($('zone-stick'), $('stick-base'), $('stick-knob'), () => sendNow());
+// Layout clássico (mantido até o moderno ser validado).
+const joystick = new Joystick($('zone-stick'), $('stick-base'), $('stick-knob'), () => sendNow(), {
+  deadzone: () => settings.deadzoneLeft,
+  sensitivity: () => settings.sensitivityLeft,
+});
+const lookPad = new LookPad($('zone-look'), $('look-dot'), () => sendNow());
+
+// Layout moderno: analógico esquerdo = movimento, direito = câmera.
+const leftStick = new Joystick($('ds-zone-left'), $('ds-base-left'), $('ds-knob-left'), () => sendNow(), {
+  deadzone: () => settings.deadzoneLeft,
+  sensitivity: () => settings.sensitivityLeft,
+  rest: { x: 0.42, y: 0.55 },
+  onTap: () => buttons.tap('L3'),
+});
+const rightStick = new Joystick($('ds-zone-right'), $('ds-base-right'), $('ds-knob-right'), () => sendNow(), {
+  deadzone: () => settings.deadzoneRight,
+  sensitivity: () => settings.sensitivityRight,
+  rest: { x: 0.5, y: 0.55 },
+  onTap: () => buttons.tap('R3'),
+});
+
 const buttons = new Buttons(
   Array.from(document.querySelectorAll<HTMLElement>('[data-button]')),
   (button, pressed) => {
+    // Botões saem na hora (fora do limite de 30 Hz) para toques curtos não se perderem.
+    flush();
     if (button === 'Action') link.sendEvent({ type: 'action', pressed });
     else link.sendEvent({ type: 'button', button, pressed });
-    sendNow();
   },
 );
 
 // ---- Envio do estado do controle ----
 
 let seq = 0;
-let lastSent = { x: 0, y: 0, buttons: 0 };
+let lastSent = { x: 0, y: 0, buttons: 0, cx: 0, cy: 0 };
 let lastSentAt = 0;
 let pending = false;
 const minInterval = 1000 / INPUT_SEND_RATE_HZ;
@@ -59,16 +99,26 @@ function sendNow(): void {
   }, wait);
 }
 
+function readState(): typeof lastSent {
+  if (settings.layout === 'modern') {
+    const invert = settings.invertCameraY ? -1 : 1;
+    return { x: leftStick.x, y: leftStick.y, buttons: buttons.mask, cx: rightStick.x, cy: rightStick.y * invert };
+  }
+  return { x: joystick.x, y: joystick.y, buttons: buttons.mask, cx: lookPad.cx, cy: lookPad.cy };
+}
+
 function flush(): void {
-  const state = { x: joystick.x, y: joystick.y, buttons: buttons.mask };
+  const state = readState();
+  const reliable = state.buttons !== lastSent.buttons;
   lastSent = state;
   lastSentAt = performance.now();
-  link.sendInput({ ...state, seq: seq++ });
+  link.sendInput({ ...state, seq: seq++ }, reliable);
 }
 
 // Heartbeat enquanto há input ativo: a TV zera o movimento se parar de receber.
 setInterval(() => {
-  const active = lastSent.x !== 0 || lastSent.y !== 0 || lastSent.buttons !== 0;
+  const active =
+    lastSent.x !== 0 || lastSent.y !== 0 || lastSent.buttons !== 0 || lastSent.cx !== 0 || lastSent.cy !== 0;
   if (active && performance.now() - lastSentAt >= INPUT_HEARTBEAT_MS) flush();
 }, INPUT_HEARTBEAT_MS / 2);
 
@@ -77,6 +127,8 @@ setInterval(() => {
 const params = new URLSearchParams(location.search);
 const urlCode = normalizeCode(params.get('code') ?? '');
 const urlPin = normalizePin(params.get('pin') ?? '');
+const urlLayout = params.get('layout');
+if (urlLayout === 'classic' || urlLayout === 'modern') saveSettings({ layout: urlLayout });
 if (urlCode || urlPin) {
   // Não deixa o PIN visível na barra de endereço/histórico.
   history.replaceState(null, '', location.pathname);
@@ -136,11 +188,11 @@ function onLinkState(state: LinkState): void {
       hideBanner();
       showScreen('pad');
       refreshStatus();
-      navigator.vibrate?.([20, 40, 20]);
+      vibrate([20, 40, 20]);
       flush();
       break;
     case 'reconnecting':
-      buttons.releaseAll();
+      releaseAll();
       setJoinServer('bad', 'Sem conexão com o servidor. Tentando de novo…');
       setStatus('bad', 'Reconectando…');
       if (link.hasCredentials) showBanner('Conexão perdida. Reconectando automaticamente…');
@@ -162,7 +214,39 @@ function onSessionStatus(s: SessionStatus): void {
   const changed = tvConnected !== s.tvConnected;
   tvConnected = s.tvConnected;
   refreshStatus();
-  if (changed) navigator.vibrate?.(tvConnected ? 30 : [60, 60, 60]);
+  if (changed) vibrate(tvConnected ? 30 : [60, 60, 60]);
+  if (s.controlMode) onControlMode(s.controlMode);
+}
+
+function onControlMode(mode: ControlMode): void {
+  applyControlMode(mode);
+}
+
+function applyControlMode(mode: ControlMode): void {
+  const driving = mode === 'driving';
+  modeChip.textContent = driving ? 'Dirigindo' : 'A pé';
+  panelDrive.hidden = !driving;
+  panelFoot.hidden = driving;
+  stickHint.textContent = driving ? 'Direção' : 'Mover';
+  btnAction.textContent = driving ? 'A' : 'Pulo';
+  stickBase = driving ? 'Direção' : 'Mover';
+  renderStickHints();
+}
+
+/** Rótulos dinâmicos: botão sem função no contexto atual fica apagado. */
+function applyHints(hints: ControlHints): void {
+  lastHints = hints;
+  for (const el of screenDs.querySelectorAll<HTMLElement>('[data-button]')) {
+    const label = hints[el.dataset.button as keyof ControlHints];
+    el.classList.toggle('idle', !label);
+    el.querySelector('small')!.textContent = label ?? '';
+  }
+  renderStickHints();
+}
+
+function renderStickHints(): void {
+  dsHintLeft.textContent = lastHints.L3 ? `${stickBase} · toque: ${lastHints.L3}` : stickBase;
+  dsHintRight.textContent = lastHints.R3 ? `Câmera · toque: ${lastHints.R3}` : 'Câmera';
 }
 
 function refreshStatus(): void {
@@ -176,12 +260,92 @@ setInterval(() => {
   latency.dataset.tone = link.latencyMs === null ? 'bad' : link.latencyMs < 60 ? 'ok' : 'warn';
 }, 1000);
 
+// ---- Ajustes ----
+
+const ranges: { id: string; key: 'deadzoneLeft' | 'deadzoneRight' | 'sensitivityLeft' | 'sensitivityRight'; pct: boolean }[] = [
+  { id: 'dzl', key: 'deadzoneLeft', pct: true },
+  { id: 'snl', key: 'sensitivityLeft', pct: false },
+  { id: 'dzr', key: 'deadzoneRight', pct: true },
+  { id: 'snr', key: 'sensitivityRight', pct: false },
+];
+
+function renderSettings(): void {
+  for (const r of ranges) {
+    const input = $<HTMLInputElement>(`set-${r.id}`);
+    input.value = String(settings[r.key]);
+    $(`out-${r.id}`).textContent = r.pct ? `${Math.round(settings[r.key] * 100)}%` : `${settings[r.key].toFixed(2)}×`;
+  }
+  $<HTMLInputElement>('set-invy').checked = settings.invertCameraY;
+  $<HTMLInputElement>('set-vib').checked = settings.vibration;
+  for (const radio of document.querySelectorAll<HTMLInputElement>('input[name="layout"]')) {
+    radio.checked = radio.value === settings.layout;
+  }
+}
+
+for (const r of ranges) {
+  $<HTMLInputElement>(`set-${r.id}`).addEventListener('input', (e) => {
+    saveSettings({ [r.key]: Number((e.target as HTMLInputElement).value) });
+    renderSettings();
+  });
+}
+$<HTMLInputElement>('set-invy').addEventListener('change', (e) =>
+  saveSettings({ invertCameraY: (e.target as HTMLInputElement).checked }),
+);
+$<HTMLInputElement>('set-vib').addEventListener('change', (e) => {
+  saveSettings({ vibration: (e.target as HTMLInputElement).checked });
+  vibrate(30);
+});
+for (const radio of document.querySelectorAll<HTMLInputElement>('input[name="layout"]')) {
+  radio.addEventListener('change', () => {
+    if (radio.checked) setLayout(radio.value as Layout);
+  });
+}
+$('settings-reset').addEventListener('click', () => {
+  resetSettings();
+  renderSettings();
+});
+$('btn-settings').addEventListener('click', () => {
+  releaseAll();
+  renderSettings();
+  settingsSheet.hidden = false;
+});
+$('settings-close').addEventListener('click', () => (settingsSheet.hidden = true));
+settingsSheet.addEventListener('click', (e) => {
+  if (e.target === settingsSheet) settingsSheet.hidden = true;
+});
+
+function setLayout(layout: Layout): void {
+  releaseAll();
+  saveSettings({ layout });
+  if (document.body.dataset.screen !== 'join') showScreen('pad');
+}
+
+function releaseAll(): void {
+  buttons.releaseAll();
+  joystick.release();
+  leftStick.release();
+  rightStick.release();
+  flush();
+}
+
 // ---- Helpers de UI ----
 
 function showScreen(name: 'join' | 'pad'): void {
+  const modern = settings.layout === 'modern';
   screenJoin.hidden = name !== 'join';
-  screenPad.hidden = name !== 'pad';
+  screenPad.hidden = name !== 'pad' || modern;
+  screenDs.hidden = name !== 'pad' || !modern;
+  statusbar.hidden = name !== 'pad';
   document.body.dataset.screen = name;
+  keepScreenOn(name === 'pad');
+  if (name === 'pad') {
+    // As zonas só têm tamanho depois de visíveis.
+    requestAnimationFrame(() => {
+      joystick.recenter();
+      leftStick.recenter();
+      rightStick.recenter();
+    });
+  }
 }
 
 function setStatus(tone: string, text: string): void {
@@ -219,6 +383,7 @@ function enterImmersive(): void {
   } catch {
     /* sem suporte */
   }
+  keepScreenOn(true);
 }
 
 document.addEventListener('contextmenu', (e) => e.preventDefault());

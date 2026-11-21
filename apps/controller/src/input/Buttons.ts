@@ -1,4 +1,5 @@
 import { Button, type ButtonName } from '@vco/shared';
+import { vibrate } from './haptics';
 
 export type ButtonListener = (button: ButtonName, pressed: boolean) => void;
 
@@ -35,6 +36,19 @@ export class Buttons {
     window.addEventListener('pointercancel', release);
   }
 
+  /** Aperto curto de um botão sem elemento próprio (ex.: toque no analógico = L3/R3). */
+  tap(name: ButtonName, ms = 120): void {
+    const bit = Button[name];
+    if (this.mask & bit) return;
+    this.mask |= bit;
+    this.listener(name, true);
+    vibrate(14);
+    setTimeout(() => {
+      this.mask &= ~bit;
+      this.listener(name, false);
+    }, ms);
+  }
+
   releaseAll(): void {
     for (const id of [...this.pressedBy.keys()]) this.release(id);
   }
@@ -45,7 +59,7 @@ export class Buttons {
     if (current) this.setState(current, false);
     this.pressedBy.set(pointerId, el);
     this.setState(el, true);
-    navigator.vibrate?.(el.dataset.button === 'Action' ? 20 : 10);
+    vibrate(el.dataset.button === 'Action' || el.dataset.button === 'Cross' ? 18 : 10);
   }
 
   private release(pointerId: number): void {

@@ -2,7 +2,7 @@
   "name": "vice-city-online",
   "version": "0.1.0",
   "private": true,
-  "description": "Vice City Online — jogo 3D no navegador da TV com o celular como controle",
+  "description": "Curitiba Open World — mundo aberto 3D na TV com celular como controle",
   "type": "module",
   "workspaces": [
     "packages/*",

@@ -1,24 +1,23 @@
-# Vice City Online
+# Curitiba Open World
 
-Jogo 3D no navegador da TV, com o celular como volante/pedais.
-O render roda no aparelho (Three.js). Servidor só sincroniza sessão e input.
+Mundo aberto 3D no navegador da TV (Curitiba Centro–Batel), com o celular como controle.
+Render local (Three.js). Servidor só sincroniza sessão e input.
 
-## Arquitetura de produção (igual Staltek)
+## Arquitetura de produção
 
 | Camada | Onde |
 |--------|------|
 | Frontend (`/tv`, `/controller`) | **Vercel** |
 | API Socket.IO | **VPS Hostinger / Portainer** `:47193` |
 
-Detalhes: **[docs/DEPLOY.md](docs/DEPLOY.md)**.
+Detalhes: **[docs/DEPLOY.md](docs/DEPLOY.md)** · 1ª entrega: **[docs/DELIVERY_1.md](docs/DELIVERY_1.md)** · Assets: **[docs/ASSETS.md](docs/ASSETS.md)**
 
 ```
 apps/game         → TV (Three.js + Vite)
-apps/controller   → celular (joystick + pedais)
-apps/server       → Node + Socket.IO (Docker/Portainer)
-packages/shared   → protocolo
+apps/controller   → celular (pé / dirigir)
+apps/server       → Node + Socket.IO
+packages/shared   → protocolo (v2)
 infra/portainer/  → stack da API
-vercel.json       → build + rewrite /socket.io → VPS
 ```
 
 ## Dev local
@@ -28,24 +27,14 @@ npm install
 npm run dev
 ```
 
-Abra o endereço impresso no terminal (TV na LAN). Controles:
-
-| Aparelho | Ação |
-|----------|------|
-| Celular | Stick = direção · **R** acelera · **L** freia · **A** pula |
-| PC | WASD · Espaço · **Q** qualidade |
+| Aparelho | A pé | Dirigindo |
+|----------|------|-----------|
+| Celular | Stick move · Correr · Entrar · Pulo | Stick direção · R/L · Sair |
+| PC | WASD · Shift · E · Espaço | WASD · E sair · Q qualidade |
 
 ```bash
 npm test
 npm run build
-npm run build:vercel   # monta dist-web/ para a Vercel
+npm run build:vercel
 npm run typecheck
 ```
-
-## Produção (resumo)
-
-1. **Portainer:** stack `infra/portainer/docker-compose.yml` + `stack.env.example`
-2. **Vercel:** root do monorepo; `VITE_SOCKET_URL` vazio
-3. `APP_URL` na API = URL HTTPS da Vercel (QR code)
-
-Não é necessário deixar o notebook ligado.
